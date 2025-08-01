@@ -1,0 +1,9 @@
+Play Store Animal Market
+alias:-  animal_market
+password:- animal_market_2025
+first and last name :-Animal Market
+organizational:-Animal Market
+organization:-Animal Market
+city:-Jaipur
+State:-Rajasthan
+country code:+91

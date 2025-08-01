@@ -1,0 +1,254 @@
+import 'package:animal_market/core/common_widgets/custom_image.dart';
+import 'package:animal_market/core/common_widgets/loader_class.dart';
+import 'package:animal_market/core/common_widgets/no_data_class.dart';
+import 'package:animal_market/core/export_file.dart';
+import 'package:animal_market/helper/deep_link_service.dart';
+import 'package:animal_market/helper/share_service.dart';
+import 'package:animal_market/modules/know_education/model/know_argument.dart';
+import 'package:animal_market/modules/know_education/providers/know_education_provider.dart';
+import 'package:animal_market/routes/routes.dart';
+import 'package:animal_market/services/api_url.dart';
+
+class KnowledgeFvrtView extends StatefulWidget {
+  final String categoryId;
+
+  const KnowledgeFvrtView({super.key, required this.categoryId});
+
+  @override
+  State<KnowledgeFvrtView> createState() => _KnowledgeFvrtViewState();
+}
+
+class _KnowledgeFvrtViewState extends State<KnowledgeFvrtView> {
+  late KnowEducationProvider provider;
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      provider = context.read<KnowEducationProvider>();
+      provider.categoryId = widget.categoryId;
+      provider.myFavouriteListGet(context, widget.categoryId);
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    provider.isLoading1 = true;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<KnowEducationProvider>(
+      builder: (context, state, child) {
+        return SafeArea(
+          child: Scaffold(
+            backgroundColor: ColorConstant.white,
+            body: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              child: Column(
+                children: [
+                  SizedBox(height: 14.h),
+                  Builder(
+                    builder: (context) {
+                      if (state.isLoading1) {
+                        return Expanded(
+                          child: LoaderClass(
+                            height: MediaQuery.of(context).size.height - 100,
+                          ),
+                        );
+                      }
+                      if (state.myFavouriteList.isEmpty) {
+                        return NoDataClass(
+                          height: 500.h,
+                          text: "noDataFound",
+                        );
+                      }
+                      return Expanded(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: state.myFavouriteList.length,
+                          itemBuilder: (context, index) {
+                            var item = state.myFavouriteList[index];
+                            return InkWell(
+                              onTap: () {
+                                Navigator.pushNamed(context, Routes.knowEducationDetails, arguments: KnowArgument(knowledgeListData: item));
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(2.h),
+                                margin: EdgeInsets.only(bottom: 10.h),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: ColorConstant.borderCl, width: 1.w),
+                                  borderRadius: BorderRadius.circular(10.dm),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Stack(
+                                      children: [
+                                        CustomImage(
+                                          placeholderAsset: ImageConstant.demoPostImg,
+                                          errorAsset: ImageConstant.demoPostImg,
+                                          radius: 6.dm,
+                                          imageUrl: item.image,
+                                          baseUrl: ApiUrl.imageUrl,
+                                          height: 194.h,
+                                          width: double.infinity,
+                                          fit: BoxFit.fill,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            InkWell(
+                                              onTap: () {
+                                                state.addRemoveFavourite(context, state.categoryId, item.id.toString());
+                                              },
+                                              child: Container(
+                                                decoration: BoxDecoration(color: ColorConstant.black.withValues(alpha:0.25), borderRadius: BorderRadius.circular(20.dm)),
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Image.asset(
+                                                  ImageConstant.fvtSelectedIc,
+                                                  height: 24.h,
+                                                  width: 24.w,
+                                                  color: ColorConstant.white,
+                                                ),
+                                              ),
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: ColorConstant.black.withAlpha(25),
+                                                borderRadius: BorderRadius.only(
+                                                  topRight: Radius.circular(6),
+                                                ),
+                                              ),
+                                              child: TText(keyName:
+                                                item.date ?? "",
+                                                style: TextStyle(
+                                                  color: ColorConstant.white,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 6),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 8.w),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                TText(keyName:
+                                                  item.title ?? "",
+                                                  style: TextStyle(
+                                                    color: ColorConstant.textDarkCl,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 9),
+                                                RichText(
+                                                  text: TextSpan(
+                                                    style: TextStyle(
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.w400,
+                                                      color: ColorConstant.appCl,
+                                                    ),
+                                                    children: [
+                                                      TextSpan(text: item.categoryName),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5.h),
+                                                Container(
+                                                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                                                  decoration: BoxDecoration(
+                                                    color: ColorConstant.appCl,
+                                                    borderRadius: BorderRadius.circular(6.r),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Icon(
+                                                        Icons.access_time,
+                                                        size: 14.sp,
+                                                        color: ColorConstant.white,
+                                                      ),
+                                                      SizedBox(width: 3.w),
+                                                      TText(
+                                                        keyName: item.postedAgo ?? "",
+                                                        style: TextStyle(
+                                                          fontSize: 12.sp,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: ColorConstant.white,
+                                                          fontFamily: FontsStyle.semiBold,
+                                                          fontStyle: FontStyle.normal,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          GestureDetector(
+                                            onTap: (){
+                                              final link = DeepLinkService().generateDeePLink(item.catId.toString(), item.id.toString(), "Knowledge");
+                                              final imageUrl = item.image != null && item.image!.isNotEmpty
+                                                  ? item.image
+                                                  : "";
+
+                                              if (link.isNotEmpty) {
+                                                ShareService.shareProduct(
+                                                  title: item.description ?? "",
+                                                  imageUrl:"${ApiUrl.imageUrl}${imageUrl??" "}",
+                                                  link: link,
+                                                );
+                                              }
+                                            },
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 5.h),
+                                              decoration: BoxDecoration(
+                                                color: ColorConstant.white,
+                                                borderRadius: BorderRadius.circular(4.dm),
+                                                border: Border.all(color: ColorConstant.borderCl),
+                                              ),
+                                              child: Image.asset(
+                                                ImageConstant.shareLineIc,
+                                                height: 22.h,
+                                                width: 22.w,
+                                                color: ColorConstant.appCl,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
